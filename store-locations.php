@@ -6,3 +6,9 @@
  * Author: 5ChauTeamDev
  * Version: 1.0.0
  */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	die( 'Invalid request.' );
+}
+
+define('STL_PLUGIN_URL', WP_PLUGIN_URL);
