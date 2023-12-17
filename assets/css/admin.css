@@ -1,0 +1,23 @@
+#woocommerce-product-data ul.wc-tabs li.custom_tab_options a::before {
+    content: "\f230";
+} 
+
+#custom_store_tab .container {
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+#custom_store_tab .header {
+    padding: 30px 30px 0 30px;
+}
+
+#custom_store_tab .warning-notice {
+    background-color: #ffeb3b;
+    color: #000;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+#custom_store_tab .add-store {
+    margin-bottom: 15px;
+}

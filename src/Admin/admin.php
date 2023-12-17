@@ -6,9 +6,10 @@ if (!class_exists('STL_WOO_PLUGIN_Admin')) {
         public function __construct()
         {
             add_action('init', array($this, 'inits'));
-            add_action('admin_head', array($this, 'action_admin_head'));
-            add_filter('woocommerce_product_data_tabs', array($this, 'add_custom_product_data_tab', 10, 1));
-            add_action('woocommerce_product_data_panels', array($this, 'custom_product_data_tab_content'), 10, 0);
+            add_filter('woocommerce_product_data_tabs', array($this, 'add_custom_product_data_tab'));
+            add_action('woocommerce_product_data_panels', array($this, 'custom_product_data_tab_content'));
+            add_action('admin_enqueue_scripts', array($this, 'admin_enqueue_scripts'), 99);
+            add_action('save_post', array($this, 'store_location_save_custom_data'), 10, 3);
         }
         public function inits()
         {
@@ -70,7 +71,7 @@ if (!class_exists('STL_WOO_PLUGIN_Admin')) {
         {
             $tabs['custom_tab'] = array(
                 'label'    => __('Store Locations', 'store-loctions-5cm'),
-                'target'   => 'store_locations',
+                'target'   => 'custom_store_tab',
                 'class'    => array('show_if_simple', 'show_if_variable'),
                 'priority' => 40
             );
@@ -79,18 +80,85 @@ if (!class_exists('STL_WOO_PLUGIN_Admin')) {
 
         public function custom_product_data_tab_content()
         {
-            global $post;
-            
+            global $woocommerce, $post;
+            $taxonomy = 'store_locations_tax';
+            $product = wc_get_product($post->ID);
+            $qty_product = '';
+            if ($product->managing_stock()) {
+                // Get stock quantity
+                $qty_product = $product->get_stock_quantity();
+            }
+            $terms = wp_get_post_terms($post->ID, $taxonomy) ?>
+            <div id="custom_store_tab" class="panel woocommerce_options_panel">
+                <?php
+                if (!empty($terms)) { ?>
+                    <div class="ui header"><?php echo esc_html__('Thông tin các cửa hàng', 'store-loctions-5cm'); ?></div>
+                    <div class="ui grid container">
+                        <div class="row">
+                            <div class="ui location-accordion styled fluid accordion">
+                                <?php foreach ($terms as $term) { ?>
+                                    <input type="hidden" name="tax_location_<?php echo esc_attr($term->slug); ?>" value="<?php echo esc_attr($term->slug); ?>">
+                                    <div class="title">
+                                        <i class="dropdown icon"></i>
+                                        <?php echo $term->name; ?>
+                                    </div>
+                                    <div class="content">
+                                        <div class="ui form">
+                                            <div class="two fields">
+                                                <div class="field">
+                                                    <label><?php echo esc_html__('Tên cửa hàng', 'store-loctions-5cm'); ?></label>
+                                                    <input type="text" name="store_location_name" value="" placeholder="<?php echo esc_attr__('Tên cửa hàng', 'store-loctions-5cm'); ?>">
+                                                </div>
+                                                <div class="field">
+                                                    <label><?php echo esc_html__('Địa chỉ', 'store-loctions-5cm'); ?></label>
+                                                    <input type="text" name="store_location_address" value="" placeholder="<?php echo esc_attr__('Địa chỉ', 'store-loctions-5cm'); ?>">
+                                                </div>
+                                            </div>
+                                            <div class="two fields">
+                                                <div class="field">
+                                                    <label><?php echo esc_html__('Số điện thoại', 'store-loctions-5cm'); ?></label>
+                                                    <input type="text" name="store_location_phone" value="" placeholder="<?php echo '0123456789'; ?>">
+                                                </div>
+                                                <div class="field">
+                                                    <label><?php echo esc_html__('Số lượng trong kho', 'store-loctions-5cm'); ?></label>
+                                                    <input type="number" name="store_location_stock" value="<?php if(!empty($qty_product)) echo $qty_product; ?>">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button class="ui right add-store positive button">
+                                            <i class="plus icon"></i>
+                                            <?php echo esc_html__('Thêm Cửa Hàng', 'store-loctions-5cm'); ?>
+                                        </button>
+                                    </div>
+                                <?php } ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php 
+                } else { ?>
+                    <p class="warning-notice"> <?php echo esc_html__('Bạn phải chọn Địa điểm của cửa hàng trước tiên!', 'store-loctions-5cm'); ?> </p>
+                <?php }
+                ?>
+            </div>
+        <?php
         }
 
-        // Add CSS - icon
-        public function action_admin_head()
+        public function store_location_save_custom_data($post_id, $post, $update)
         {
-            echo '<style>
-                #woocommerce-product-data ul.wc-tabs li.custom_tab_options a::before {
-                    content: "\f230";
-                } 
-            </style>';
+           
+        }
+        public function admin_enqueue_scripts()
+        {
+            $current_screen = get_current_screen()->id;
+            if ('product' !== $current_screen) {
+                return;
+            }
+
+            wp_enqueue_style('stl-5cm-semantic-ui', STL_WOO_PLUGIN_DIR_CSS . 'semantic.min.css');
+            wp_enqueue_style('stl-5cm-icon-ui', STL_WOO_PLUGIN_DIR_CSS . 'icon.min.css');
+            wp_enqueue_style('stl-5cm-admin', STL_WOO_PLUGIN_DIR_CSS . 'admin.css');
+            wp_enqueue_script('stl-5cm-semantic-ui', STL_WOO_PLUGIN_DIR_JS . 'semantic.min.js', array('jquery'));
+            wp_enqueue_script('stl-5cm-admin', STL_WOO_PLUGIN_DIR_JS . 'admin.js', array('jquery'), false);
         }
     }
 }
