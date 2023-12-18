@@ -84,68 +84,151 @@ if (!class_exists('STL_WOO_PLUGIN_Admin')) {
             $taxonomy = 'store_locations_tax';
             $product = wc_get_product($post->ID);
             $qty_product = '';
-            if ($product->managing_stock()) {
+            $store_location_meta = get_post_meta($post->ID, 'store_location_5cm', true);
+            $store_location_string = $store_location_meta['store_location'];
+            $store_locations = json_decode($store_location_string);
+            $terms = wp_get_post_terms($post->ID, $taxonomy);
+            if ($product->managing_stock()) :
                 // Get stock quantity
-                $qty_product = $product->get_stock_quantity();
-            }
-            $terms = wp_get_post_terms($post->ID, $taxonomy) ?>
-            <div id="custom_store_tab" class="panel woocommerce_options_panel">
-                <?php
-                if (!empty($terms)) { ?>
-                    <div class="ui header"><?php echo esc_html__('Thông tin các cửa hàng', 'store-loctions-5cm'); ?></div>
-                    <div class="ui grid container">
-                        <div class="row">
-                            <div class="ui location-accordion styled fluid accordion">
-                                <?php foreach ($terms as $term) { ?>
-                                    <input type="hidden" name="tax_location_<?php echo esc_attr($term->slug); ?>" value="<?php echo esc_attr($term->slug); ?>">
-                                    <div class="title">
-                                        <i class="dropdown icon"></i>
-                                        <?php echo $term->name; ?>
-                                    </div>
-                                    <div class="content">
-                                        <div class="ui form">
-                                            <div class="two fields">
-                                                <div class="field">
-                                                    <label><?php echo esc_html__('Tên cửa hàng', 'store-loctions-5cm'); ?></label>
-                                                    <input type="text" name="store_location_name" value="" placeholder="<?php echo esc_attr__('Tên cửa hàng', 'store-loctions-5cm'); ?>">
-                                                </div>
-                                                <div class="field">
-                                                    <label><?php echo esc_html__('Địa chỉ', 'store-loctions-5cm'); ?></label>
-                                                    <input type="text" name="store_location_address" value="" placeholder="<?php echo esc_attr__('Địa chỉ', 'store-loctions-5cm'); ?>">
-                                                </div>
+                $qty_product = $product->get_stock_quantity(); ?>
+                <input type="hidden" class="qty_base" name="tax_location_stock" value="<?php echo esc_attr($qty_product); ?>">
+                <div id="custom_store_tab" class="panel woocommerce_options_panel">
+                    <?php
+                    if (!isset($store_locations)) :
+                        if (!empty($terms)) : ?>
+                            <div class="ui header"><?php echo esc_html__('Thông tin các cửa hàng', 'store-loctions-5cm'); ?></div>
+                            <div class="ui grid container">
+                                <div class="row">
+                                    <div class="ui location-accordion styled fluid accordion">
+                                        <?php foreach ($terms as $term) : ?>
+                                            <div class="title">
+                                                <i class="dropdown icon"></i>
+                                                <?php echo $term->name; ?>
                                             </div>
-                                            <div class="two fields">
-                                                <div class="field">
-                                                    <label><?php echo esc_html__('Số điện thoại', 'store-loctions-5cm'); ?></label>
-                                                    <input type="text" name="store_location_phone" value="" placeholder="<?php echo '0123456789'; ?>">
+                                            <div class="content">
+                                                <div id="form-store">
+                                                    <div class="ui formcontent form">
+                                                        <div class="delete-form">
+                                                            <button class="ui btn-deleted button">
+                                                                <i class="close icon"></i>
+                                                            </button>
+                                                        </div>
+                                                        <input type="hidden" class="tax_location" name="tax_location_<?php echo esc_attr($term->slug); ?>" value="<?php echo esc_attr($term->slug); ?>">
+                                                        <div class="two fields">
+                                                            <div class="field">
+                                                                <label><?php echo esc_html__('Tên cửa hàng', 'store-loctions-5cm'); ?></label>
+                                                                <input type="text" class="store_location_name" name="store_location_name" value="" placeholder="<?php echo esc_attr__('Tên cửa hàng', 'store-loctions-5cm'); ?>">
+                                                            </div>
+                                                            <div class="field">
+                                                                <label><?php echo esc_html__('Địa chỉ', 'store-loctions-5cm'); ?></label>
+                                                                <input type="text" class="store_location_address" name="store_location_address" value="" placeholder="<?php echo esc_attr__('Địa chỉ', 'store-loctions-5cm'); ?>">
+                                                            </div>
+                                                        </div>
+                                                        <div class="two fields">
+                                                            <div class="field">
+                                                                <label><?php echo esc_html__('Số điện thoại', 'store-loctions-5cm'); ?></label>
+                                                                <input type="text" class="store_location_phone" name="store_location_phone" value="" placeholder="<?php echo '0345678912'; ?>">
+                                                            </div>
+                                                            <div class="field">
+                                                                <label><?php echo esc_html__('Số lượng trong kho', 'store-loctions-5cm'); ?></label>
+                                                                <input type="number" class="store_location_stock" name="store_location_stock" value="<?php if (!empty($qty_product)) echo $qty_product; ?>">
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="field">
-                                                    <label><?php echo esc_html__('Số lượng trong kho', 'store-loctions-5cm'); ?></label>
-                                                    <input type="number" name="store_location_stock" value="<?php if(!empty($qty_product)) echo $qty_product; ?>">
-                                                </div>
+                                                <button class="ui add-store positive button" data-location="<?php echo esc_attr($term->slug); ?>">
+                                                    <i class="plus icon"></i>
+                                                    <?php echo esc_html__('Thêm Cửa Hàng', 'store-loctions-5cm'); ?>
+                                                </button>
                                             </div>
-                                        </div>
-                                        <button class="ui right add-store positive button">
-                                            <i class="plus icon"></i>
-                                            <?php echo esc_html__('Thêm Cửa Hàng', 'store-loctions-5cm'); ?>
-                                        </button>
+                                        <?php endforeach; ?>
                                     </div>
-                                <?php } ?>
+                                </div>
+                            </div>
+                        <?php
+                        else :  ?>
+                            <p class="warning-notice"> <?php echo esc_html__('Bạn phải chọn Địa điểm của cửa hàng trước tiên!', 'store-loctions-5cm'); ?> </p>
+                        <?php
+                        endif;
+                    else : ?>
+                        <div class="ui header"><?php echo esc_html__('Thông tin các cửa hàng', 'store-loctions-5cm'); ?></div>
+                        <div class="ui grid container">
+                            <div class="row">
+                                <div class="ui location-accordion styled fluid accordion">
+                                    <?php
+
+                                    if ($terms) :
+                                        foreach ($terms as $term) : ?>
+                                            <div class="title">
+                                                <i class="dropdown icon"></i>
+                                                <?php echo $term->name; ?>
+                                            </div>
+                                            <div class="content">
+                                                <div id="form-store">
+                                                    <?php
+                                                    if ($store_locations) :
+                                                        foreach ($store_locations as $store_location) :
+                                                            if ($term->slug == $store_location->location) : ?>
+                                                                <div class="ui formcontent form">
+                                                                    <div class="delete-form">
+                                                                        <button class="ui btn-deleted button">
+                                                                            <i class="close icon"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                    <input type="hidden" class="tax_location" name="tax_location_<?php echo esc_attr($term->slug); ?>" value="<?php echo esc_attr($term->slug); ?>">
+                                                                    <div class="two fields">
+                                                                        <div class="field">
+                                                                            <label><?php echo esc_html__('Tên cửa hàng', 'store-loctions-5cm'); ?></label>
+                                                                            <input type="text" class="store_location_name" name="store_location_name" value="<?php echo esc_attr($store_location->name); ?>" placeholder="<?php echo esc_attr__('Tên cửa hàng', 'store-loctions-5cm'); ?>">
+                                                                        </div>
+                                                                        <div class="field">
+                                                                            <label><?php echo esc_html__('Địa chỉ', 'store-loctions-5cm'); ?></label>
+                                                                            <input type="text" class="store_location_address" name="store_location_address" value="<?php echo esc_attr($store_location->address); ?>" placeholder="<?php echo esc_attr__('Địa chỉ', 'store-loctions-5cm'); ?>">
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="two fields">
+                                                                        <div class="field">
+                                                                            <label><?php echo esc_html__('Số điện thoại', 'store-loctions-5cm'); ?></label>
+                                                                            <input type="text" class="store_location_phone" name="store_location_phone" value="<?php echo esc_attr($store_location->phone); ?>" placeholder="<?php echo '0345678912'; ?>">
+                                                                        </div>
+                                                                        <div class="field">
+                                                                            <label><?php echo esc_html__('Số lượng trong kho', 'store-loctions-5cm'); ?></label>
+                                                                            <input type="number" class="store_location_stock" name="store_location_stock" value="<?php echo esc_attr($store_location->stock); ?>">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                    <?php
+                                                            endif;
+                                                        endforeach;
+                                                    endif; ?>
+                                                </div>
+                                                <button class="ui add-store positive button" data-location="<?php echo esc_attr($term->slug); ?>">
+                                                    <i class="plus icon"></i>
+                                                    <?php echo esc_html__('Thêm Cửa Hàng', 'store-loctions-5cm'); ?>
+                                                </button>
+                                            </div>
+                                    <?php
+                                        endforeach;
+                                    endif;
+                                    ?>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                <?php 
-                } else { ?>
-                    <p class="warning-notice"> <?php echo esc_html__('Bạn phải chọn Địa điểm của cửa hàng trước tiên!', 'store-loctions-5cm'); ?> </p>
-                <?php }
-                ?>
-            </div>
-        <?php
+                    <?php
+                    endif;
+                    ?>
+                </div>
+<?php
+            endif;
         }
 
         public function store_location_save_custom_data($post_id, $post, $update)
         {
-           
+            $data_store_location = isset($_POST['data_store_location']) ? sanitize_text_field(wp_unslash($_POST['data_store_location'])) : '';
+            $meta_value = [
+                'store_location' => $data_store_location
+            ];
+            update_post_meta($post_id, 'store_location_5cm', $meta_value);
         }
         public function admin_enqueue_scripts()
         {
