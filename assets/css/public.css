@@ -2,6 +2,7 @@
     padding: 10px;
     border: 1px solid #ccc;
 }
+
 .label-product {
     background-color: black;
     color: #fff;
@@ -42,8 +43,11 @@
     padding-bottom: 10px;
 }
 
-
 .list-store-locations .item:last-child {
     margin-bottom: 0;
     border-bottom: none;
+}
+
+.list-store-locations .item .content {
+    margin-bottom: 10px;
 }
