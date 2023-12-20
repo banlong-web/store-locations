@@ -1,6 +1,6 @@
 #woocommerce-product-data ul.wc-tabs li.custom_tab_options a::before {
     content: "\f230";
-} 
+}
 
 #custom_store_tab .container {
     padding-left: 30px;
